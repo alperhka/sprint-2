@@ -1,0 +1,124 @@
+openapi: 3.0.3
+info:
+  title: Shop AG Payment Service API
+  description: |
+    REST API des Payment Services zur Autorisierung und Abwicklung von Zahlungen für Bestellungen.
+  version: "1.0.0"
+servers:
+  - url: http://localhost:8100
+    description: Lokale Entwicklungsumgebung
+tags:
+  - name: Payments
+    description: Zahlungsabwicklung
+paths:
+  /payments:
+    post:
+      tags:
+        - Payments
+      summary: Zahlung autorisieren
+      description: Prüft und autorisiert die Zahlung für eine Bestellung.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentRequest"
+      responses:
+        "200":
+          description: Zahlung erfolgreich autorisiert.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
+        "402":
+          description: Zahlung konnte nicht autorisiert werden.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
+        "400":
+          description: Ungültige Zahlungsdaten.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Interner Fehler im Payment Service.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    PaymentRequest:
+      type: object
+      required:
+        - paymentId
+        - orderId
+        - amount
+        - method
+      properties:
+        paymentId:
+          type: string
+          example: PAY-2025-10-16-0001
+        orderId:
+          type: string
+          example: ORD-2025-10-16-7891
+        amount:
+          type: number
+          format: float
+          example: 209.97
+        currency:
+          type: string
+          default: EUR
+          enum:
+            - EUR
+            - USD
+            - CHF
+        method:
+          type: string
+          description: Zahlungsart
+          enum:
+            - CREDIT_CARD
+            - PAYPAL
+            - SEPA
+            - INVOICE
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+    PaymentResponse:
+      type: object
+      required:
+        - paymentId
+        - orderId
+        - status
+      properties:
+        paymentId:
+          type: string
+        orderId:
+          type: string
+        status:
+          type: string
+          enum:
+            - AUTHORIZED
+            - DECLINED
+            - ERROR
+        authorizationCode:
+          type: string
+          description: Referenz des Zahlungsdienstleisters bei erfolgreicher Autorisierung.
+        failureReason:
+          type: string
+          description: Fehlerbeschreibung bei abgelehnter Zahlung.
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          example: INTERNAL_ERROR
+        message:
+          type: string
+

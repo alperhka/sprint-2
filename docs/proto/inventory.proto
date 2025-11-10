@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package shop.inventory.v1;
+
+option go_package = "github.com/shop-ag/inventory-service/gen/go;inventory";
+option java_multiple_files = true;
+option java_package = "com.shopag.inventory.v1";
+
+// InventoryService stellt Operationen zur Prüfung und Reservierung von Artikelbeständen bereit.
+service InventoryService {
+  // Prüft, ob alle Artikel verfügbar sind und reserviert sie bei Erfolg.
+  rpc CheckAndReserve (ReservationRequest) returns (ReservationResponse);
+
+  // Hebt eine zuvor vorgenommene Reservierung wieder auf.
+  rpc ReleaseReservation (ReleaseRequest) returns (ReleaseResponse);
+}
+
+// ReservationRequest enthält die anzufragenden Artikel einer Bestellung.
+message ReservationRequest {
+  string order_id = 1;
+  repeated OrderItem items = 2;
+  int32 reservation_ttl_seconds = 3;
+}
+
+// OrderItem beschreibt ein einzelnes Produkt mit der angefragten Menge.
+message OrderItem {
+  string product_id = 1;
+  int32 quantity = 2;
+}
+
+// ReservationResponse liefert das Ergebnis der Verfügbarkeitsprüfung.
+message ReservationResponse {
+  string order_id = 1;
+  ReservationStatus status = 2;
+  string reservation_id = 3;
+  repeated UnavailableItem unavailable_items = 4;
+  string message = 5;
+}
+
+// UnavailableItem enthält Detailinformationen zu einem nicht verfügbaren Produkt.
+message UnavailableItem {
+  string product_id = 1;
+  int32 requested = 2;
+  int32 available = 3;
+}
+
+// ReleaseRequest hebt eine bestehende Reservierung auf.
+message ReleaseRequest {
+  string reservation_id = 1;
+  string order_id = 2;
+}
+
+// ReleaseResponse bestätigt die Aufhebung einer Reservierung.
+message ReleaseResponse {
+  string reservation_id = 1;
+  bool success = 2;
+  string message = 3;
+}
+
+// ReservationStatus repräsentiert das Ergebnis der Verfügbarkeitsprüfung.
+enum ReservationStatus {
+  RESERVATION_STATUS_UNSPECIFIED = 0;
+  RESERVATION_STATUS_CONFIRMED = 1;
+  RESERVATION_STATUS_PARTIALLY_AVAILABLE = 2;
+  RESERVATION_STATUS_UNAVAILABLE = 3;
+}
+

@@ -1,0 +1,120 @@
+asyncapi: 3.0.0
+info:
+  title: Shop AG Warehouse Messaging
+  version: "1.0.0"
+  description: |
+    Definition der Nachrichtenformate zwischen Integrationslösung und Warehouse Management System (WMS).
+defaultContentType: application/json
+servers:
+  rabbitmqLocal:
+    host: amqp://guest:guest@localhost:5672/
+    protocol: amqp
+channels:
+  shop.fulfillment.commands:
+    address: shop.fulfillment.commands
+    messages:
+      OrderFulfillmentCommand:
+        $ref: "#/components/messages/OrderFulfillmentCommand"
+  shop.fulfillment.status:
+    address: shop.fulfillment.status
+    messages:
+      FulfillmentStatusEvent:
+        $ref: "#/components/messages/FulfillmentStatusEvent"
+components:
+  messages:
+    OrderFulfillmentCommand:
+      name: OrderFulfillmentCommand
+      title: Auftrag an das Lager
+      summary: Startet die Kommissionierung einer Bestellung im WMS.
+      payload:
+        $ref: "#/components/schemas/OrderFulfillmentCommand"
+    FulfillmentStatusEvent:
+      name: FulfillmentStatusEvent
+      title: Statusupdate aus dem Lager
+      summary: Informiert über den Fortschritt der Lagerabwicklung einer Bestellung.
+      payload:
+        $ref: "#/components/schemas/FulfillmentStatusEvent"
+  schemas:
+    OrderFulfillmentCommand:
+      type: object
+      required:
+        - eventType
+        - occurredAt
+        - orderId
+        - items
+        - shippingAddress
+      properties:
+        eventType:
+          type: string
+          const: ORDER_FULFILLMENT_COMMAND
+        occurredAt:
+          type: string
+          format: date-time
+        orderId:
+          type: string
+        reservationId:
+          type: string
+          description: Referenz auf die Inventar-Reservierung.
+        items:
+          type: array
+          items:
+            type: object
+            required:
+              - productId
+              - quantity
+            properties:
+              productId:
+                type: string
+              quantity:
+                type: integer
+              pickLocation:
+                type: string
+                description: Optionaler Lagerplatz.
+        shippingAddress:
+          type: object
+          required:
+            - street
+            - city
+            - zipCode
+            - country
+          properties:
+            street:
+              type: string
+            city:
+              type: string
+            zipCode:
+              type: string
+            country:
+              type: string
+    FulfillmentStatusEvent:
+      type: object
+      required:
+        - eventType
+        - occurredAt
+        - orderId
+        - status
+      properties:
+        eventType:
+          type: string
+          enum:
+            - ITEMS_PICKED
+            - ORDER_PACKED
+            - ORDER_SHIPPED
+            - FULFILLMENT_ERROR
+        occurredAt:
+          type: string
+          format: date-time
+        orderId:
+          type: string
+        status:
+          type: string
+          enum:
+            - ITEMS_PICKED
+            - ORDER_PACKED
+            - ORDER_SHIPPED
+            - FULFILLMENT_ERROR
+        details:
+          type: string
+        correlationId:
+          type: string
+
