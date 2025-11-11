@@ -19,7 +19,7 @@ Die wichtigsten Artefakte:
 
 ## Voraussetzungen
 
-- Python 3.11
+- Python 3.9+
 - `pip` bzw. `uv` o.ä. Paketmanager
 - Docker (zum Starten von RabbitMQ via Compose)
 
@@ -42,7 +42,15 @@ RabbitMQ ist anschließend unter `amqp://guest:guest@localhost:5672/` erreichbar
 
 ## Services starten
 
-Die einzelnen Services können in separaten Terminals gestartet werden:
+### Option 1: Alle Services auf einmal (empfohlen)
+
+```bash
+./start_all_services.sh
+```
+
+Dieses Skript startet alle Services in einem Terminal und beendet sie gemeinsam mit Ctrl+C.
+
+### Option 2: Einzelne Services in separaten Terminals
 
 ```bash
 # Inventory (gRPC, Port 50051)
@@ -84,6 +92,14 @@ curl -X POST http://localhost:8000/orders \
 ```
 
 Die Beispielpayloads können anhand des Templates im Aufgabenblatt erstellt werden. Zur Simulation einer Zahlungsablehnung genügt ein Eintrag `"metadata": {"simulate": "decline"}` in der Bestellung.
+
+### Alle Testszenarien auf einmal
+
+```bash
+./test_scenarios.sh
+```
+
+Dieses Skript führt alle drei Testszenarien nacheinander aus.
 
 ## Tests ausführen
 
