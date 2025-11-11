@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import time
 from datetime import datetime
-from typing import Callable, Iterable
+from typing import Callable, Iterable, Optional
 
 from ..messaging.rabbitmq import RabbitMQConsumer, RabbitMQPublisher
 
@@ -15,13 +15,13 @@ class WarehouseWorker:
         self,
         command_consumer: RabbitMQConsumer,
         status_publisher: RabbitMQPublisher,
-        processing_delays: Iterable[float] | None = None,
+        processing_delays: Optional[Iterable[float]] = None,
     ) -> None:
         self._consumer = command_consumer
         self._publisher = status_publisher
         self._delays = list(processing_delays or [1.0, 1.0, 1.0])
 
-    def _publish_status(self, order_id: str, status: str, details: str | None = None) -> None:
+    def _publish_status(self, order_id: str, status: str, details: Optional[str] = None) -> None:
         event = {
             "eventType": status,
             "occurredAt": datetime.utcnow().isoformat(),
@@ -41,7 +41,7 @@ class WarehouseWorker:
 
         LOGGER.info("Starte Kommissionierung für Order %s", order_id)
         statuses = ["ITEMS_PICKED", "ORDER_PACKED", "ORDER_SHIPPED"]
-        for delay, status in zip(self._delays, statuses, strict=False):
+        for delay, status in zip(self._delays, statuses):
             time.sleep(delay)
             self._publish_status(order_id, status)
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field, PositiveInt
 
@@ -52,7 +52,7 @@ class Order(BaseModel):
     items: List[OrderItem]
     totalAmount: float
     shippingAddress: Address
-    metadata: dict[str, str] | None = None
+    metadata: Optional[Dict[str, str]] = None
 
 
 class OrderHistoryEntry(BaseModel):
@@ -77,7 +77,7 @@ class PaymentRequest(BaseModel):
     amount: float
     currency: str = "EUR"
     method: str = "CREDIT_CARD"
-    metadata: dict[str, str] | None = None
+    metadata: Optional[Dict[str, str]] = None
 
 
 class PaymentResponse(BaseModel):
